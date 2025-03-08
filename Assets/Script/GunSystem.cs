@@ -9,135 +9,185 @@ public class GunSystem : MonoBehaviour
     public float timeBetweenShooting, spread, range, reloadTime, timeBetweenShots;
     public int magazineSize, bulletsPerTap;
     public bool allowButtonHold;
-    private int bulletsLeft, bulletsShot;
+    int bulletsLeft, bulletsShot;
+    public int rotationSpeed = 500;
 
-    //Bools 
-    private bool shooting, readyToShoot, reloading;
+    //bools 
+    bool shooting, readyToShoot, reloading;
 
-    //References
+
+    //Reference
     public Camera fpsCam;
     public Transform attackPoint;
-    public LayerMask hitMask; // Now supports all layers
+    public RaycastHit rayHit;
+    public LayerMask whatIsEnemy;
 
+    public Vector3 normalLocalPosition;
+    public Vector3 aimingLocalPosition;
+    public float aimSmoothing = 10;
     //Graphics
-    public GameObject muzzleFlashPrefab;
-    public GameObject bulletHolePrefab;
+    public ParticleSystem muzzleFlash;
+    public GameObject bulletHoleGraphic;
     public CameraShake camShake;
     public float camShakeMagnitude, camShakeDuration;
-    public TextMeshProUGUI ammoText;
+    public TextMeshProUGUI text;
+
+    private Vector3 originalPosition;  // Store the original position
+    public float recoilAmount = 0.1f;  // How much the gun moves back
+    private Vector3 currentRecoilOffset = Vector3.zero;
+    private Vector3 targetPosition;
+
 
     private void Awake()
     {
         bulletsLeft = magazineSize;
         readyToShoot = true;
     }
-
+    private void Start()
+    {
+        originalPosition = transform.localPosition;
+    }
     private void Update()
     {
-        HandleInput();
-        UpdateAmmoText();
+        MyInput();
+        DetermineAim();
+
+        if (reloading) RotateGun(rotationSpeed);
+        else StopRotation();
+
+        // Apply recoil offset to the gun position
+        transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition + currentRecoilOffset, Time.deltaTime * aimSmoothing);
+
+        // Update UI
+        text.SetText(bulletsLeft + " / " + magazineSize);
     }
-
-    private void HandleInput()
+    private void MyInput()
     {
-        shooting = allowButtonHold ? Input.GetKey(KeyCode.Mouse0) : Input.GetKeyDown(KeyCode.Mouse0);
+        if (allowButtonHold) shooting = Input.GetKey(KeyCode.Mouse0);
+        else shooting = Input.GetKeyDown(KeyCode.Mouse0);
 
-        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading)
-            StartCoroutine(Reload());
+
+        if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
+
 
         //Shoot
         if (readyToShoot && shooting && !reloading && bulletsLeft > 0)
         {
             bulletsShot = bulletsPerTap;
             Shoot();
+            ApplyRecoil();
         }
     }
+    private void DetermineAim()
+    {
+        // Position Adjustment
+        targetPosition = normalLocalPosition;
+        float targetYRotation = 105f; // Default rotation when not aiming
 
+        if (Input.GetMouseButton(1)) // Right Mouse Button for Aiming
+        {
+            targetPosition = aimingLocalPosition;
+            targetYRotation = 90f; // Rotate to 90° when aiming
+        }
+
+        // Smoothly interpolate position and rotation
+        transform.localPosition = Vector3.Lerp(transform.localPosition, targetPosition, Time.deltaTime * aimSmoothing);
+
+        // Smoothly rotate only on the Y-axis
+        Quaternion targetRotation = Quaternion.Euler(transform.localRotation.eulerAngles.x, targetYRotation, transform.localRotation.eulerAngles.z);
+        transform.localRotation = Quaternion.Lerp(transform.localRotation, targetRotation, Time.deltaTime * aimSmoothing);
+    }
     private void Shoot()
     {
         readyToShoot = false;
 
-        //Spread Calculation
-        float spreadX = Random.Range(-spread, spread);
-        float spreadY = Random.Range(-spread, spread);
-        float spreadZ = Random.Range(-spread, spread);
+        muzzleFlash.Play();
+        AudioManager.instance.Play("Fire");
+        //Spread
+        float x = Random.Range(-spread, spread);
+        float y = Random.Range(-spread, spread);
 
-        Vector3 spreadDirection = fpsCam.transform.forward + new Vector3(spreadX, spreadY, spreadZ);
+        
+        //Calculate Direction with Spread
+        Vector3 direction = fpsCam.transform.forward + new Vector3(x, y, 0);
 
-        //Raycast
-        if (Physics.Raycast(fpsCam.transform.position, spreadDirection, out RaycastHit hit, range, hitMask))
+       
+        //RayCast
+        if (Physics.Raycast(fpsCam.transform.position, direction, out rayHit, range))
         {
-            Debug.Log("Hit: " + hit.collider.name);
+            Debug.Log(rayHit.collider.name);
 
-            // ✅ Apply damage only if the object has an EnemyHealth script
-            EnemyHealth enemy = hit.collider.GetComponent<EnemyHealth>();
-            if (enemy != null)
-            {
-                enemy.TakeDamage(damage);
-            }
 
-            // ✅ Spawn bullet impact only if an object was hit
-            if (bulletHolePrefab != null)
-            {
-                GameObject impact = Instantiate(bulletHolePrefab, hit.point, Quaternion.LookRotation(hit.normal));
-                impact.transform.SetParent(hit.collider.transform);
-                Destroy(impact, 5f);
-            }
+            //if (rayHit.collider.CompareTag("Enemy"))
+            //    rayHit.collider.GetComponent<EnemyHealth>().TakeDamage(damage);
         }
 
-        // ✅ Show muzzle flash
-        if (muzzleFlashPrefab != null)
-        {
-            GameObject flash = Instantiate(muzzleFlashPrefab, attackPoint.position, attackPoint.rotation);
-            flash.transform.SetParent(attackPoint); // Attach to gun tip
-            Destroy(flash, 0.1f);
-        }
 
-        // ✅ Apply Camera Shake
-        if (camShake != null)
-        {
-            camShake.Shake(camShakeDuration, camShakeMagnitude);
-        }
+        //ShakeCamera
+        //camShake.StartShake(camShakeDuration, camShakeMagnitude);
+
+
+        //Graphics
+        GameObject impact = Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+        Destroy(impact, 5);
+
 
         bulletsLeft--;
         bulletsShot--;
 
+
         Invoke("ResetShot", timeBetweenShooting);
+
 
         if (bulletsShot > 0 && bulletsLeft > 0)
             Invoke("Shoot", timeBetweenShots);
     }
-
     private void ResetShot()
     {
         readyToShoot = true;
     }
-
-    private IEnumerator Reload()
+    private void Reload()
     {
         reloading = true;
+        Invoke("ReloadFinished", reloadTime);
+    }
+    private void ReloadFinished()
+    {
+        bulletsLeft = magazineSize;
+        reloading = false;
+    }
+    public void ApplyRecoil()
+    {
+        // Apply recoil relative to current position
+        currentRecoilOffset += new Vector3(0, 0, -recoilAmount);
 
-        // ✅ Rotate gun during reload
+        // Smoothly return to aimed position
+        StartCoroutine(ResetRecoil());
+    }
+
+    private IEnumerator ResetRecoil()
+    {
         float elapsedTime = 0f;
-        Transform gunTransform = transform;
-        Quaternion startRotation = gunTransform.rotation;
-        Quaternion targetRotation = Quaternion.Euler(gunTransform.eulerAngles.x, gunTransform.eulerAngles.y, gunTransform.eulerAngles.z + 360);
+        float recoilResetSpeed = 10f; // Adjust for smoothness
 
-        while (elapsedTime < reloadTime)
+        Vector3 startOffset = currentRecoilOffset;
+
+        while (elapsedTime < 0.1f)
         {
-            gunTransform.rotation = Quaternion.Lerp(startRotation, targetRotation, elapsedTime / reloadTime);
+            currentRecoilOffset = Vector3.Lerp(startOffset, Vector3.zero, elapsedTime * recoilResetSpeed);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        gunTransform.rotation = startRotation; // Reset rotation after reload
-        bulletsLeft = magazineSize;
-        reloading = false;
+        currentRecoilOffset = Vector3.zero; // Ensure exact reset
     }
-
-    private void UpdateAmmoText()
+    void RotateGun(float rotationSpeed)
     {
-        if (ammoText != null)
-            ammoText.text = $"{bulletsLeft} / {magazineSize}";
+        transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
+    }
+    void StopRotation()
+    {
+        if (!Input.GetMouseButton(1))
+            transform.localRotation = Quaternion.Euler(0, 105, 0); // Reset rotation
     }
 }
