@@ -149,11 +149,13 @@ public class GunSystem : MonoBehaviour
     private void Reload()
     {
         reloading = true;
+        transform.GetChild(0).gameObject.SetActive(false);
         Invoke("ReloadFinished", reloadTime);
     }
     private void ReloadFinished()
     {
         bulletsLeft = magazineSize;
+        transform.GetChild(0).gameObject.SetActive(true);
         reloading = false;
     }
     public void ApplyRecoil()
@@ -189,5 +191,15 @@ public class GunSystem : MonoBehaviour
     {
         if (!Input.GetMouseButton(1))
             transform.localRotation = Quaternion.Euler(0, 105, 0); // Reset rotation
+    }
+
+    public bool IsShooting()
+    {
+        return Input.GetMouseButton(0); // Shooting when left-click is held
+    }
+
+    public bool IsAiming()
+    {
+        return Input.GetMouseButton(1); // Aiming when right-click is held
     }
 }

@@ -27,7 +27,6 @@ public class FirstPersonMovement : MonoBehaviour
     {
         // Update IsRunning from input.
         IsRunning = canRun && Input.GetKey(runningKey);
-
         // Get targetMovingSpeed.
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
         if (speedOverrides.Count > 0)
@@ -40,5 +39,13 @@ public class FirstPersonMovement : MonoBehaviour
 
         // Apply movement.
         rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
+    }
+    public bool IsMoving()
+    {
+        return rigidbody.velocity.magnitude > 0.1f; // Adjust threshold if needed
+    }
+    public bool IsRunningPlayer()
+    {
+        return IsRunning; // Adjust threshold if needed
     }
 }
