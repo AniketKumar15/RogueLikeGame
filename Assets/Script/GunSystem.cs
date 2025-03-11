@@ -36,6 +36,10 @@ public class GunSystem : MonoBehaviour
     public float recoilAmount = 0.1f;  // How much the gun moves back
     private Vector3 currentRecoilOffset = Vector3.zero;
     private Vector3 targetPosition;
+    public int gunDefaultRotation = 105;
+    public int aimRotation = 90;
+    public Vector3 rotationAxis = new Vector3(0, 0, 1);
+
 
 
     private void Awake()
@@ -68,6 +72,7 @@ public class GunSystem : MonoBehaviour
 
 
         if (Input.GetKeyDown(KeyCode.R) && bulletsLeft < magazineSize && !reloading) Reload();
+        if (bulletsLeft == 0 && !reloading) Reload();
 
 
         //Shoot
@@ -82,12 +87,12 @@ public class GunSystem : MonoBehaviour
     {
         // Position Adjustment
         targetPosition = normalLocalPosition;
-        float targetYRotation = 105f; // Default rotation when not aiming
+        float targetYRotation = gunDefaultRotation; // Default rotation when not aiming
 
         if (Input.GetMouseButton(1)) // Right Mouse Button for Aiming
         {
             targetPosition = aimingLocalPosition;
-            targetYRotation = 90f; // Rotate to 90° when aiming
+            targetYRotation = aimRotation; // Rotate to 90° when aiming
         }
 
         // Smoothly interpolate position and rotation
@@ -185,12 +190,13 @@ public class GunSystem : MonoBehaviour
     }
     void RotateGun(float rotationSpeed)
     {
-        transform.Rotate(0, 0, rotationSpeed * Time.deltaTime);
+        transform.Rotate(rotationAxis * rotationSpeed * Time.deltaTime, Space.Self);
+        
     }
     void StopRotation()
     {
         if (!Input.GetMouseButton(1))
-            transform.localRotation = Quaternion.Euler(0, 105, 0); // Reset rotation
+            transform.localRotation = Quaternion.Euler(0, gunDefaultRotation, 0); // Reset rotation
     }
 
     public bool IsShooting()

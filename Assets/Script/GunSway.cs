@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GunSway : MonoBehaviour
 {
-     [Header("Sway Settings")]
+    [Header("Sway Settings")]
     public float swayAmount = 0.02f;
     public float maxSwayAmount = 0.06f;
     public float swaySmoothness = 6f;
@@ -21,7 +21,7 @@ public class GunSway : MonoBehaviour
 
     private Vector3 initialPosition;
     private Quaternion initialRotation;
-    private Rigidbody rb;
+    public Rigidbody rb;
     private bool isGrounded;
 
     void Start()
@@ -30,7 +30,7 @@ public class GunSway : MonoBehaviour
         initialRotation = transform.localRotation;
 
         // Find the Rigidbody of the Player
-        rb = FindObjectOfType<Rigidbody>();
+        //rb = FindObjectOfType<Rigidbody>();
     }
 
     void Update()

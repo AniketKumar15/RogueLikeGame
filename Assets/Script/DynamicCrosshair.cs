@@ -48,7 +48,10 @@ public class DynamicCrosshair : MonoBehaviour
 
         // Shrink when aiming
         if (gunSystem != null && gunSystem.IsAiming())
+        {
             targetSpread = aimSpread;
+            gunSystem.spread = 0.01f;
+        }
 
         // Smooth transition
         currentSpread = Mathf.Lerp(currentSpread, targetSpread, Time.deltaTime * shrinkSpeed);
