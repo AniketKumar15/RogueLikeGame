@@ -186,8 +186,8 @@ GameObject:
   m_Component:
   - component: {fileID: 7590594053838642377}
   - component: {fileID: 5861524314548949831}
-  - component: {fileID: 6961928639298622312}
   - component: {fileID: 7279433882422481677}
+  - component: {fileID: 739331137819134926}
   m_Layer: 0
   m_Name: Ak47
   m_TagString: Untagged
@@ -255,28 +255,6 @@ MonoBehaviour:
   gunDefaultRotation: 105
   aimRotation: 90
   rotationAxis: {x: 0, y: 0, z: 5}
---- !u!114 &6961928639298622312
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5861524314548949828}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86a868cf0a5fae84487d746120ee0596, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  gunScript: {fileID: 5861524314548949831}
-  rb: {fileID: 0}
-  coll: {fileID: 0}
-  player: {fileID: 0}
-  gunContainer: {fileID: 0}
-  fpsCam: {fileID: 0}
-  pickUpRange: 4
-  dropForwardForce: 0.5
-  dropUpwardForce: 15
-  equipped: 1
 --- !u!54 &7279433882422481677
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -293,6 +271,28 @@ Rigidbody:
   m_Interpolate: 2
   m_Constraints: 0
   m_CollisionDetection: 3
+--- !u!114 &739331137819134926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5861524314548949828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86a868cf0a5fae84487d746120ee0596, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gunScript: {fileID: 5861524314548949831}
+  rb: {fileID: 7279433882422481677}
+  coll: {fileID: 6345815615785624603}
+  player: {fileID: 0}
+  gunContainer: {fileID: 0}
+  fpsCam: {fileID: 0}
+  pickUpRange: 5
+  dropForwardForce: 2
+  dropUpwardForce: 2
+  equipped: 1
 --- !u!1 &6297074872141487243
 GameObject:
   m_ObjectHideFlags: 0
