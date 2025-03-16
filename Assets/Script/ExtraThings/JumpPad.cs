@@ -1,16 +1,20 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class JumpPad : MonoBehaviour
 {
-    public int forceAmount = 10;
+    public int forceAmount = 20;
+
+
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collision.gameObject.CompareTag("Player"))
         {
-            Rigidbody Rb =  collision.gameObject.GetComponent<Rigidbody>();
-            Rb.velocity = new Vector3(0, forceAmount, 0);
+            Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
+            rb.velocity = Vector3.up * forceAmount;
+
         }
     }
+
 }

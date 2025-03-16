@@ -267,7 +267,7 @@ MonoBehaviour:
   camShakeMagnitude: 0.01
   camShakeDuration: 0.01
   text: {fileID: 0}
-  recoilAmount: 0.05
+  recoilAmount: 0.3
   gunDefaultRotation: 105
   aimRotation: 90
   rotationAxis: {x: 0, y: 0, z: 5}
@@ -309,6 +309,7 @@ MonoBehaviour:
   dropForwardForce: 2
   dropUpwardForce: 2
   equipped: 0
+  pickUpText: {fileID: 0}
 --- !u!1 &7247109549127656750
 GameObject:
   m_ObjectHideFlags: 0

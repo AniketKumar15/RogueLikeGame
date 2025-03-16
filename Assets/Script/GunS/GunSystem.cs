@@ -107,6 +107,7 @@ public class GunSystem : MonoBehaviour
         readyToShoot = false;
 
         muzzleFlash.Play();
+
         AudioManager.instance.Play("Fire");
         //Spread
         float x = Random.Range(-spread, spread);
@@ -120,8 +121,11 @@ public class GunSystem : MonoBehaviour
         //RayCast
         if (Physics.Raycast(fpsCam.transform.position, direction, out rayHit, range))
         {
-            Debug.Log(rayHit.collider.name);
 
+            if (rayHit.rigidbody != null)
+            {
+                rayHit.rigidbody.AddForce(-rayHit.normal * 200);
+            }
 
             //if (rayHit.collider.CompareTag("Enemy"))
             //    rayHit.collider.GetComponent<EnemyHealth>().TakeDamage(damage);
@@ -134,6 +138,7 @@ public class GunSystem : MonoBehaviour
 
         //Graphics
         GameObject impact = Instantiate(bulletHoleGraphic, rayHit.point, Quaternion.LookRotation(rayHit.normal));
+        impact.transform.SetParent(rayHit.collider.gameObject.transform);
         Destroy(impact, 5);
 
 
